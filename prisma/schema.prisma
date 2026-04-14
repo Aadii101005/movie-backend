@@ -1,0 +1,30 @@
+// This is your Prisma schema file.
+// In Prisma 7+, the 'url' property is NO LONGER SUPPORTED here.
+// Connection configuration is handled in prisma.config.ts and backend/config/db.js.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+}
+
+model Movie {
+  id          Int      @id @default(autoincrement())
+  title       String
+  year        Int
+  genre       String
+  description String   @db.Text
+  externalId  String?
+  createdAt   DateTime @default(now())
+}
