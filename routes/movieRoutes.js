@@ -1,0 +1,8 @@
+import express from "express";
+import { getNetflixMovies } from "../controllers/movie.controller.js";
+
+const router = express.Router();
+
+router.get("/netflix", getNetflixMovies);
+
+export default router;

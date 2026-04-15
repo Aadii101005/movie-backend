@@ -5,12 +5,15 @@ import prisma from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 
 dotenv.config();
+await import("./cron/syncjob.js");
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 const PORT = process.env.PORT || 5000;
+
+export default app;
 
 // Routes
 app.use("/api/auth", authRoutes);
@@ -74,6 +77,35 @@ app.delete("/api/movies/:id", async (req, res) => {
         res.status(500).json({ message: "Error deleting movie" });
     }
 });
+
+// app.get("/api/movies/dummy", async (req, res) => {
+//     res.json([
+//         {
+//             id: 1,
+//             title: "The Matrix",
+//             year: 1999,
+//             genre: "Action|Sci-Fi",
+//             description: "A computer hacker learns from mysterious rebels about the true nature of his reality.",
+//             externalId: "tt0133093"
+//         },
+//         {
+//             id: 2,
+//             title: "Inception",
+//             year: 2010,
+//             genre: "Action|Sci-Fi",
+//             description: "A skilled thief who steals corporate secrets through dream-sharing technology.",
+//             externalId: "tt1375666"
+//         },
+//         {
+//             id: 3,
+//             title: "The Dark Knight",
+//             year: 2008,
+//             genre: "Action|Crime",
+//             description: "Batman must accept one of the greatest psychological and physical tests.",
+//             externalId: "tt0468569"
+//         }
+//     ]);
+// });
 
 app.post("/api/movies/sync", async (req, res) => {
     try {

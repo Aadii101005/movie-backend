@@ -11,8 +11,8 @@ export const register = async (req, res) => {
 
 export const login = async (req, res) => {
   try {
-    const token = await authService.loginUser(req.body);
-    res.json({ token });
+    const { token, user } = await authService.loginUser(req.body);
+    res.json({ token, user });
   } catch (err) {
     res.status(401).json({ error: err.message });
   }
