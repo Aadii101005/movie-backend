@@ -13,7 +13,21 @@ model movie {
   year        Int
   genre       String
   description String   @db.Text
-  externalId  String?
+  poster      String?
+  rating      Float?
+  externalId  String?  @unique @db.VarChar(255)
+  createdAt   DateTime @default(now())
+}
+
+model tvSeries {
+  id          Int      @id @default(autoincrement())
+  title       String
+  year        Int
+  genre       String
+  description String   @db.Text
+  poster      String?
+  rating      Float?
+  externalId  String?  @unique @db.VarChar(255)
   createdAt   DateTime @default(now())
 }
 

@@ -34,6 +34,17 @@ app.get("/api/movies", async (req, res) => {
     }
 });
 
+app.get("/api/series", async (req, res) => {
+    try {
+        const series = await prisma.tvSeries.findMany({
+            orderBy: { createdAt: "desc" }
+        });
+        res.status(200).json(series);
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching series" });
+    }
+});
+
 app.post("/api/movies", async (req, res) => {
     try {
         const movie = await prisma.movie.create({
@@ -77,35 +88,6 @@ app.delete("/api/movies/:id", async (req, res) => {
         res.status(500).json({ message: "Error deleting movie" });
     }
 });
-
-// app.get("/api/movies/dummy", async (req, res) => {
-//     res.json([
-//         {
-//             id: 1,
-//             title: "The Matrix",
-//             year: 1999,
-//             genre: "Action|Sci-Fi",
-//             description: "A computer hacker learns from mysterious rebels about the true nature of his reality.",
-//             externalId: "tt0133093"
-//         },
-//         {
-//             id: 2,
-//             title: "Inception",
-//             year: 2010,
-//             genre: "Action|Sci-Fi",
-//             description: "A skilled thief who steals corporate secrets through dream-sharing technology.",
-//             externalId: "tt1375666"
-//         },
-//         {
-//             id: 3,
-//             title: "The Dark Knight",
-//             year: 2008,
-//             genre: "Action|Crime",
-//             description: "Batman must accept one of the greatest psychological and physical tests.",
-//             externalId: "tt0468569"
-//         }
-//     ]);
-// });
 
 app.post("/api/movies/sync", async (req, res) => {
     try {
