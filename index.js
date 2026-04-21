@@ -89,6 +89,40 @@ app.delete("/api/movies/:id", async (req, res) => {
     }
 });
 
+app.get("/api/search", async (req, res) => {
+    const { q } = req.query;
+    if (!q) return res.status(400).json({ message: "Search query is required" });
+
+    try {
+        const [movies, series] = await Promise.all([
+            prisma.movie.findMany({
+                where: {
+                    OR: [
+                        { title: { contains: q } },
+                        { description: { contains: q } }
+                    ]
+                }
+            }),
+            prisma.tvSeries.findMany({
+                where: {
+                    OR: [
+                        { title: { contains: q } },
+                        { description: { contains: q } }
+                    ]
+                }
+            })
+        ]);
+
+        res.json({
+            movies: movies.map(m => ({ ...m, type: 'movie' })),
+            series: series.map(s => ({ ...s, type: 'series' })),
+            total: movies.length + series.length
+        });
+    } catch (error) {
+        res.status(500).json({ message: "Search failed" });
+    }
+});
+
 app.post("/api/movies/sync", async (req, res) => {
     try {
         const keyword = req.body.keyword || "batman";
