@@ -1,8 +1,10 @@
 import express from "express";
-import { getNetflixMovies } from "../controllers/movieControllers.js";
+import { getMovies, syncTMDB } from "../controllers/movieControllers.js";
 
 const router = express.Router();
 
-router.get("/netflix", getNetflixMovies);
+router.get("/", getMovies);
+
+router.post("/sync", syncTMDB);
 
 export default router;

@@ -3,52 +3,24 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export const fetchNetflixMovies = async () => {
-  // Using popular movies to get a wider variety
+export const fetchPopularMovies = async () => {
   const res = await axios.get(
     `https://api.themoviedb.org/3/movie/popular?api_key=${process.env.TMDB_KEY}`
   );
-
-  const movies = res.data.results;
-  let netflixMovies = [];
-
-  for (let movie of movies) {
-    const providerRes = await axios.get(
-      `https://api.themoviedb.org/3/movie/${movie.id}/watch/providers?api_key=${process.env.TMDB_KEY}`
-    );
-
-    const results = providerRes.data.results || {};
-    // Check IN (India) or US as fallback
-    const providers = [
-      ...(results.IN?.flatrate || []),
-      ...(results.US?.flatrate || [])
-    ];
-
-    const isNetflix = providers.some(p => p.provider_name === "Netflix");
-
-    if (isNetflix) {
-      // Check if already in list to avoid duplicates from multiple regions
-      if (!netflixMovies.find(m => m.id === movie.id)) {
-        netflixMovies.push(movie);
-      }
-    }
-  }
-
-  
-  return netflixMovies;
+  return res.data.results;
 };
 
-export const saveNetflixMoviesToDB = async () => {
+export const saveMoviesToDB = async () => {
   try {
-    const netflixMovies = await fetchNetflixMovies();
+    const movies = await fetchPopularMovies();
     
-    for (let movie of netflixMovies) {
+    for (let movie of movies) {
       await prisma.movie.upsert({
         where: { externalId: String(movie.id) },
         update: {
           title: movie.title || movie.original_title,
           description: movie.overview,
-          year: new Date(movie.release_date).getFullYear() || new Date().getFullYear(),
+          year: movie.release_date ? new Date(movie.release_date).getFullYear() : new Date().getFullYear(),
           genre: "Movie",
           poster: movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : null,
           rating: movie.vote_average,
@@ -56,7 +28,7 @@ export const saveNetflixMoviesToDB = async () => {
         create: {
           title: movie.title || movie.original_title,
           description: movie.overview,
-          year: new Date(movie.release_date).getFullYear() || new Date().getFullYear(),
+          year: movie.release_date ? new Date(movie.release_date).getFullYear() : new Date().getFullYear(),
           genre: "Movie",
           poster: movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : null,
           rating: movie.vote_average,
@@ -65,56 +37,32 @@ export const saveNetflixMoviesToDB = async () => {
       });
     }
     
-    console.log(`Successfully saved ${netflixMovies.length} Netflix movies to database.`);
-    return netflixMovies;
+    console.log(`Successfully saved ${movies.length} movies to database.`);
+    return movies;
   } catch (error) {
     console.error("Error saving movies to database:", error);
     throw error;
   }
 };
 
-export const fetchNetflixSeries = async () => {
+export const fetchPopularSeries = async () => {
   const res = await axios.get(
     `https://api.themoviedb.org/3/tv/popular?api_key=${process.env.TMDB_KEY}`
   );
-
-  const series = res.data.results;
-  let netflixSeries = [];
-
-  for (let s of series) {
-    const providerRes = await axios.get(
-      `https://api.themoviedb.org/3/tv/${s.id}/watch/providers?api_key=${process.env.TMDB_KEY}`
-    );
-
-    const results = providerRes.data.results || {};
-    const providers = [
-      ...(results.IN?.flatrate || []),
-      ...(results.US?.flatrate || [])
-    ];
-
-    const isNetflix = providers.some(p => p.provider_name === "Netflix");
-
-    if (isNetflix) {
-      if (!netflixSeries.find(item => item.id === s.id)) {
-        netflixSeries.push(s);
-      }
-    }
-  }
-  
-  return netflixSeries;
+  return res.data.results;
 };
 
-export const saveNetflixSeriesToDB = async () => {
+export const saveSeriesToDB = async () => {
   try {
-    const netflixSeries = await fetchNetflixSeries();
+    const series = await fetchPopularSeries();
     
-    for (let s of netflixSeries) {
+    for (let s of series) {
       await prisma.tvSeries.upsert({
         where: { externalId: String(s.id) },
         update: {
           title: s.name || s.original_name,
           description: s.overview,
-          year: new Date(s.first_air_date).getFullYear() || new Date().getFullYear(),
+          year: s.first_air_date ? new Date(s.first_air_date).getFullYear() : new Date().getFullYear(),
           genre: "TV Series",
           poster: s.poster_path ? `https://image.tmdb.org/t/p/w500${s.poster_path}` : null,
           rating: s.vote_average,
@@ -122,7 +70,7 @@ export const saveNetflixSeriesToDB = async () => {
         create: {
           title: s.name || s.original_name,
           description: s.overview,
-          year: new Date(s.first_air_date).getFullYear() || new Date().getFullYear(),
+          year: s.first_air_date ? new Date(s.first_air_date).getFullYear() : new Date().getFullYear(),
           genre: "TV Series",
           poster: s.poster_path ? `https://image.tmdb.org/t/p/w500${s.poster_path}` : null,
           rating: s.vote_average,
@@ -131,10 +79,10 @@ export const saveNetflixSeriesToDB = async () => {
       });
     }
     
-    console.log(`Successfully saved ${netflixSeries.length} Netflix series to database.`);
-    return netflixSeries;
+    console.log(`Successfully saved ${series.length} series to database.`);
+    return series;
   } catch (error) {
     console.error("Error saving series to database:", error);
     throw error;
   }
-};
+};

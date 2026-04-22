@@ -3,6 +3,8 @@ import cors from "cors";
 import dotenv from "dotenv";
 import prisma from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
+import movieRoutes from "./routes/movieRoutes.js";
+import seriesRoutes from "./routes/seriesRoutes.js";
 
 dotenv.config();
 await import("./cron/syncjob.js");
@@ -17,140 +19,13 @@ export default app;
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/movies", movieRoutes);
+app.use("/api/series", seriesRoutes);
 
 app.get("/api/health", (req, res) => {
     res.json({ status: "ok", phase: "modular-architecture-fixed" });
 });
 
-// Movies routes
-app.get("/api/movies", async (req, res) => {
-    try {
-        const movies = await prisma.movie.findMany({
-            orderBy: { createdAt: "desc" }
-        });
-        res.status(200).json(movies);
-    } catch (error) {
-        res.status(500).json({ message: "Error fetching movies" });
-    }
-});
-
-app.get("/api/series", async (req, res) => {
-    try {
-        const series = await prisma.tvSeries.findMany({
-            orderBy: { createdAt: "desc" }
-        });
-        res.status(200).json(series);
-    } catch (error) {
-        res.status(500).json({ message: "Error fetching series" });
-    }
-});
-
-app.post("/api/movies", async (req, res) => {
-    try {
-        const movie = await prisma.movie.create({
-            data: {
-                title: req.body.title,
-                year: Number(req.body.year),
-                genre: req.body.genre,
-                description: req.body.description
-            }
-        });
-        res.status(201).json(movie);
-    } catch (error) {
-        res.status(400).json({ message: "Error creating movie" });
-    }
-});
-
-app.put("/api/movies/:id", async (req, res) => {
-    try {
-        const movie = await prisma.movie.update({
-            where: { id: Number(req.params.id) },
-            data: {
-                title: req.body.title,
-                year: Number(req.body.year),
-                genre: req.body.genre,
-                description: req.body.description
-            }
-        });
-        res.json(movie);
-    } catch (error) {
-        res.status(500).json({ message: "Could not update movie" });
-    }
-});
-
-app.delete("/api/movies/:id", async (req, res) => {
-    try {
-        await prisma.movie.delete({
-            where: { id: Number(req.params.id) }
-        });
-        res.status(204).send();
-    } catch (error) {
-        res.status(500).json({ message: "Error deleting movie" });
-    }
-});
-
-app.get("/api/search", async (req, res) => {
-    const { q } = req.query;
-    if (!q) return res.status(400).json({ message: "Search query is required" });
-
-    try {
-        const [movies, series] = await Promise.all([
-            prisma.movie.findMany({
-                where: {
-                    OR: [
-                        { title: { contains: q } },
-                        { description: { contains: q } }
-                    ]
-                }
-            }),
-            prisma.tvSeries.findMany({
-                where: {
-                    OR: [
-                        { title: { contains: q } },
-                        { description: { contains: q } }
-                    ]
-                }
-            })
-        ]);
-
-        res.json({
-            movies: movies.map(m => ({ ...m, type: 'movie' })),
-            series: series.map(s => ({ ...s, type: 'series' })),
-            total: movies.length + series.length
-        });
-    } catch (error) {
-        res.status(500).json({ message: "Search failed" });
-    }
-});
-
-app.post("/api/movies/sync", async (req, res) => {
-    try {
-        const keyword = req.body.keyword || "batman";
-        const apiKey = process.env.OMDB_API_KEY || "demo";
-        const url = `https://www.omdbapi.com/?apikey=${apiKey}&s=${keyword}`;
-        const externalResponse = await fetch(url);
-        const externalData = await externalResponse.json();
-        const list = externalData.Search || [];
-
-        await prisma.movie.createMany({
-            data: list.map((item) => ({
-                title: item.Title,
-                year: Number(item.Year),
-                genre: "Unknown",
-                externalId: item.imdbID,
-                description: "Synced from OMDb"
-            })),
-            skipDuplicates: true
-        });
-
-        res.status(200).json({
-            message: "Sync completed",
-            insertedCount: list.length
-        });
-    } catch (error) {
-        res.status(500).json({ message: "Sync failed" });
-    }
-});
 
 app.listen(PORT, () => {
     console.log(`Backend running on http://localhost:${PORT}`);
