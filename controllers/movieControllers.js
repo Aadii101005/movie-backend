@@ -27,13 +27,3 @@ export const syncTMDB = async (req, res) => {
     res.status(500).json({ error: "Sync failed" });
   }
 };
-
-export const getSeries = async (req, res) => {
-  try {
-    const series = await prisma.tvSeries.findMany();
-    res.json(series);
-  } catch (error) {
-    console.error("Error fetching series:", error);
-    res.status(500).json({ error: "Failed to fetch series" });
-  }
-};

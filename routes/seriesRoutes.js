@@ -1,8 +1,11 @@
 import express from "express";
-import { getSeries } from "../controllers/movieControllers.js";
+import { getSeries, syncSeries } from "../controllers/seriesControllers.js";
 
 const router = express.Router();
 
 router.get("/", getSeries);
+router.post("/sync", syncSeries);
 
 export default router;
+
+
