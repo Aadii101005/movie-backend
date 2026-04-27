@@ -5,6 +5,7 @@ import prisma from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import movieRoutes from "./routes/movieRoutes.js";
 import seriesRoutes from "./routes/seriesRoutes.js";
+import protectedRoutes from "./routes/protectedRoutes.js";
 
 dotenv.config();
 await import("./cron/syncjob.js");
@@ -21,6 +22,7 @@ export default app;
 app.use("/api/auth", authRoutes);
 app.use("/api/movies", movieRoutes);
 app.use("/api/series", seriesRoutes);
+app.use("/api/protected", protectedRoutes);
 
 app.get("/api/health", (req, res) => {
     res.json({ status: "ok", phase: "modular-architecture-fixed" });
@@ -30,4 +32,3 @@ app.get("/api/health", (req, res) => {
 app.listen(PORT, () => {
     console.log(`Backend running on http://localhost:${PORT}`);
 });
-            
