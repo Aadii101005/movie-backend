@@ -20,8 +20,9 @@ export default app;
 
 // Routes
 app.use("/api/auth", authRoutes);
-app.use("/api/movies", movieRoutes);
-app.use("/api/series", seriesRoutes);
+// Public routes commented out to enforce JWT
+// app.use("/api/movies", movieRoutes);
+// app.use("/api/series", seriesRoutes);
 app.use("/api/protected", protectedRoutes);
 
 app.get("/api/health", (req, res) => {
