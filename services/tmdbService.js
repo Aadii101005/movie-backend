@@ -8,12 +8,12 @@ export const fetchPopularMovies = async (pages =2) => {
    let allMovies = [];
    
   for (let i = 1; i <= pages; i++) {
-  const res = await axios.get(
-    `https://api.themoviedb.org/3/movie/popular?api_key=${process.env.TMDB_KEY}`
-  );
+    const res = await axios.get(
+      `https://api.themoviedb.org/3/movie/popular?api_key=${process.env.TMDB_KEY}&page=${i}`
+    );
 
-  allMovies = [...allMovies, ...res.data.results];
-}
+    allMovies = [...allMovies, ...res.data.results];
+  }
   return allMovies;
 };
 
@@ -57,11 +57,11 @@ export const fetchPopularSeries = async (pages = 2) => {
   let allSeries = [];
 
   for(let i=1; i<=pages; i++){
-  const res = await axios.get(
-    `https://api.themoviedb.org/3/tv/popular?api_key=${process.env.TMDB_KEY}`
-  );
-   allSeries = [...allSeries, ...res.data.results];
-}
+    const res = await axios.get(
+      `https://api.themoviedb.org/3/tv/popular?api_key=${process.env.TMDB_KEY}&page=${i}`
+    );
+    allSeries = [...allSeries, ...res.data.results];
+  }
   return allSeries;
 };
 

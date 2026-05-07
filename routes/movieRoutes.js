@@ -1,9 +1,12 @@
 import express from "express";
-import { getMovies, syncTMDB } from "../controllers/movieControllers.js";
+import { getMovies, syncTMDB, createMovie, updateMovie, deleteMovie } from "../controllers/movieControllers.js";
 
 const router = express.Router();
 
 router.get("/", getMovies);
+router.post("/", createMovie);
+router.put("/:id", updateMovie);
+router.delete("/:id", deleteMovie);
 
 router.post("/sync", syncTMDB);
 

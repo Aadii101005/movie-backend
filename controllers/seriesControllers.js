@@ -26,3 +26,58 @@ export const syncSeries = async (req, res) => {
     res.status(500).json({ error: "Series sync failed" });
   }
 };
+
+export const createSeries = async (req, res) => {
+  try {
+    const { title, year, genre, description, poster, rating } = req.body;
+    const newSeries = await prisma.tvSeries.create({
+      data: {
+        title,
+        year: parseInt(year),
+        genre,
+        description,
+        poster,
+        rating: rating ? parseFloat(rating) : null,
+      },
+    });
+    res.status(201).json(newSeries);
+  } catch (error) {
+    console.error("Error creating series:", error);
+    res.status(500).json({ error: "Failed to create series" });
+  }
+};
+
+export const updateSeries = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, year, genre, description, poster, rating } = req.body;
+    const updatedSeries = await prisma.tvSeries.update({
+      where: { id: parseInt(id) },
+      data: {
+        title,
+        year: parseInt(year),
+        genre,
+        description,
+        poster,
+        rating: rating ? parseFloat(rating) : null,
+      },
+    });
+    res.json(updatedSeries);
+  } catch (error) {
+    console.error("Error updating series:", error);
+    res.status(500).json({ error: "Failed to update series" });
+  }
+};
+
+export const deleteSeries = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await prisma.tvSeries.delete({
+      where: { id: parseInt(id) },
+    });
+    res.json({ message: "Series deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting series:", error);
+    res.status(500).json({ error: "Failed to delete series" });
+  }
+};
