@@ -13,6 +13,22 @@ export const getSeries = async (req, res) => {
   }
 };
 
+export const getSeriesById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const series = await prisma.tvSeries.findUnique({
+      where: { id: parseInt(id) },
+    });
+    if (!series) {
+      return res.status(404).json({ error: "Series not found" });
+    }
+    res.json(series);
+  } catch (error) {
+    console.error("Error fetching series by ID:", error);
+    res.status(500).json({ error: "Failed to fetch series" });
+  }
+};
+
 export const syncSeries = async (req, res) => {
   try {
     const series = await saveSeriesToDB();
